@@ -20,11 +20,11 @@ struct OnboardingLayout: View {
                  .scaledToFit()
                  .frame(maxWidth: 150, maxHeight: 100)
              
-//             Ellipse()
-//             .frame(maxWidth: 150, maxHeight: 150)
-//             .background(Color("WhiteBlur"))
-//             .opacity(0.07)
-//             .blur(radius: 40)
+            Ellipse()
+                .frame(maxWidth: 150, maxHeight: 150)
+                .background(Color("WhiteBlur"))
+                .opacity(0.07)
+                .blur(radius: 40)
          }
          
          Spacer()
