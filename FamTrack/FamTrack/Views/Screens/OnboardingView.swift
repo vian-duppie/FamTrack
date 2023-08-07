@@ -8,13 +8,12 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    @State var currentOnboardingView = 0
-    @State var viewWidth: CGFloat = 0
-    @State var isAnimating = false
+    @State private var currentOnboardingView = 0
+    
     var views : [AnyView] = [AnyView(OnboardingOneView()), AnyView(OnboardingTwoView()), AnyView(OnboardingThreeView())]
     
     var body: some View {
-        VStack { // VStack Outer
+        VStack {
             Text("Skip")
                 .foregroundColor(.white)
                 .font(Font.custom("Poppins-Medium", size: 16))
@@ -23,49 +22,40 @@ struct OnboardingView: View {
             Spacer()
             
             VStack {
-                views[currentOnboardingView]
-                    .frame(maxWidth: isAnimating ? .infinity : .infinity, alignment: .center)
-                    .transition(.move(edge: .trailing))
-                    .animation(.easeInOut, value: isAnimating)
-//                    .onChange(of: currentOnboardingView) {_ in
-//                        isAnimating = true
-//                        let baseAnimation = Animation.easeInOut(duration: 1)
-//
-//                        withAnimation(baseAnimation) {
-//                            isAnimating = false
-//                        }
-//                    }
+                TabView(selection: $currentOnboardingView) {
+                    ForEach(0 ..< views.count, id: \.self) { index in
+                        views[index]
+                            .tag(index)
+                            .transition(.scale)
+                    }
+                }
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             }
             .frame(maxWidth: .infinity, alignment: .center)
-            
-
             
             Spacer()
             
             HStack {
-                DotProgressBar(indexCount: 2, currentIndex: currentOnboardingView)
+                DotProgressBar(indexCount: views.count-1, currentIndex: currentOnboardingView)
                 
                 Spacer()
-                
-                Button("Test") {
-                    if currentOnboardingView < views.count - 1 {
-//                        currentOnboardingView += 1
-                        withAnimation {
-                            isAnimating.toggle()
-                        }
-                        isAnimating.toggle()
-                        print(views.count)
-                        print(currentOnboardingView)
-                    } else {
-                        currentOnboardingView = 0
-                    }
-                }
+
+                CustomIconButton(icon: "arrow.right", action: handleNextButton)
             }
             .frame(maxWidth: .infinity)
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        //VStack Outer
+    }
+    
+    private func handleNextButton() {
+        if currentOnboardingView < views.count - 1 {
+            withAnimation(.easeInOut(duration: 1)) {
+                currentOnboardingView += 1
+            }
+        } else {
+            currentOnboardingView = 0
+        }
     }
 }
 
