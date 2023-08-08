@@ -44,7 +44,7 @@ struct OnboardingView: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .padding(40)
+        .padding(30)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
