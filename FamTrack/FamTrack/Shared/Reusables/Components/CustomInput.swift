@@ -8,15 +8,15 @@
 import SwiftUI
 
 struct CustomInput: View {
-    @Binding var isPasswordInput: Bool
-    @Binding var label: String
-    @Binding var placeholder: String
-    @Binding var icon: String
-    @Binding var hint: String
-    @Binding var showingError: Bool
+    var isPasswordInput: Bool?
+    var label: String
+    var placeholder: String
+    var icon: String = ""
+    var showingError: Bool = false
+    var iconClicked: () -> Void = {}
+    var hintLabel = ""
     
-    @State private var username: String = ""
-    @FocusState private var emailFieldIsFocused: Bool
+    @Binding var value: String
 
     var body: some View {
         VStack {
@@ -30,21 +30,21 @@ struct CustomInput: View {
                 .frame(height: 20)
             
             HStack {
-                if isPasswordInput {
-                    SecureField(placeholder, text: $username)
+                if isPasswordInput ?? false {
+                    SecureField(placeholder, text: $value)
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
                         .font(Font.custom("Poppins-Light", size: 15))
                         
                 } else {
-                    TextField(placeholder, text: $username)
+                    TextField(placeholder, text: $value)
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
                         .font(Font.custom("Poppins-Light", size: 15))
                 }
                 
                 if !icon.isEmpty {
-                    Button(action: iconButtonTap) {
+                    Button(action: iconClicked) {
                         Image(systemName: icon)
                              .resizable()
                              .scaledToFit()
@@ -61,7 +61,7 @@ struct CustomInput: View {
             Spacer()
                 .frame(height: 5)
             
-            Text(label)
+            Text(hintLabel)
                 .foregroundColor(showingError ? .red : .white)
                 .opacity(showingError ? 1 : 0.6)
                 .font(Font.custom("Poppins-Light", size: 13))
@@ -70,7 +70,7 @@ struct CustomInput: View {
     }
     
     private func iconButtonTap() {
-        
+        print("The icon has been pressed")
     }
 }
 
