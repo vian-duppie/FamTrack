@@ -38,11 +38,24 @@ struct SignUpView: View {
             heading: "Sign Up",
             subHeading: "Complete the form below to create your FamTrack account",
             mainAction: handleSignUp,
+            secondaryAction: AnyView(
+                NavigationLink(
+                     destination: LoginView(),  // Navigate to SignUpView
+                     label: {
+                         Text("Login")
+                             .foregroundColor(.white)
+                             .font(Font.custom("Poppins-Light", size: 13))
+                             .opacity(0.67)
+                             .underline()
+                     }
+                 )
+            ),
             lineButtonLabel: "Already have an account?",
             lineButtonText: "Log In",
             lineButtonOpacity: 0.67,
             buttonLabel: "Sign Up"
         )
+        .navigationBarHidden(true)
     }
     
     func handleSignUp() {
