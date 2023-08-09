@@ -33,11 +33,25 @@ struct LoginView: View {
             heading: "Log In",
             subHeading: "Complete the form below to log in",
             mainAction: handleLogin,
+            secondaryAction: AnyView(
+                NavigationLink(
+                     destination: SignUpView(),  // Navigate to SignUpView
+                     label: {
+                         Text("Sign Up")
+                             .foregroundColor(.white)
+                             .font(Font.custom("Poppins-Light", size: 13))
+                             .opacity(0.67)
+                             .underline()
+//                         CustomLineButton(label: "Sign Up", opacity: 0.67)
+                     }
+                 )
+            ),
             lineButtonLabel: "Don't have an account?",
             lineButtonText: "Sign Up",
             lineButtonOpacity: 0.67,
             buttonLabel: "Log In"
         )
+        .navigationBarHidden(true)
     }
     
     private func handleLogin() {
@@ -66,6 +80,8 @@ struct LoginView: View {
         if !canLogin {
             return
         }
+        
+//        SignUpView()
     }
     
     private func clearErrors() {
