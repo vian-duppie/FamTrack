@@ -9,6 +9,8 @@ import SwiftUI
 import Foundation
 
 struct LoginView: View {
+    @EnvironmentObject var userVM: UserStateViewModel
+    
     @State var emailHint: String = ""
     @State var isEmailError: Bool = false
     @State var passwordHint: String = ""
@@ -19,40 +21,48 @@ struct LoginView: View {
     @State var canLogin: Bool = true
     
     var body: some View {
-        AuthenticationLayout(
-            formContent: {
-                LoginForm(
-                    emailHint: $emailHint,
-                    isEmailError: $isEmailError,
-                    passwordHint: $passwordHint,
-                    isPasswordError: $isPasswordError,
-                    emailValue: $emailValue,
-                    passwordValue: $passwordValue
-                )
-            },
-            heading: "Log In",
-            subHeading: "Complete the form below to log in",
-            mainAction: handleLogin,
-            secondaryAction: AnyView(
-                NavigationLink(
-                     destination: SignUpView(),  // Navigate to SignUpView
-                     label: {
-                         Text("Sign Up")
-                             .foregroundColor(.white)
-                             .font(Font.custom("Poppins-Light", size: 13))
-                             .opacity(0.67)
-                             .underline()
-//                         CustomLineButton(label: "Sign Up", opacity: 0.67)
-                     }
-                 )
-            ),
-            lineButtonLabel: "Don't have an account?",
-            lineButtonText: "Sign Up",
-            lineButtonOpacity: 0.67,
-            buttonLabel: "Log In"
-        )
-        .navigationBarHidden(true)
-    }
+        ZStack {
+            if userVM.isBusy {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.black.opacity(0.3))
+                    .zIndex(1)
+            }
+            
+            AuthenticationLayout(
+                formContent: {
+                    LoginForm(
+                        emailHint: $emailHint,
+                        isEmailError: $isEmailError,
+                        passwordHint: $passwordHint,
+                        isPasswordError: $isPasswordError,
+                        emailValue: $emailValue,
+                        passwordValue: $passwordValue
+                    )
+                },
+                heading: "Log In",
+                subHeading: "Complete the form below to log in",
+                mainAction: handleLogin,
+                secondaryAction: AnyView(
+                    NavigationLink(
+                         destination: SignUpView(),  // Navigate to SignUpView
+                         label: {
+                             Text("Sign Up")
+                                 .foregroundColor(.white)
+                                 .font(Font.custom("Poppins-Light", size: 13))
+                                 .opacity(0.67)
+                                 .underline()
+                         }
+                     )
+                ),
+                lineButtonLabel: "Don't have an account?",
+                lineButtonText: "Sign Up",
+                lineButtonOpacity: 0.67,
+                buttonLabel: "Log In"
+            )
+            .navigationBarHidden(true)
+        }
+        }
     
     private func handleLogin() {
         clearErrors()
@@ -80,6 +90,18 @@ struct LoginView: View {
         if !canLogin {
             return
         }
+        
+        Task {
+            let res = await userVM.signIn(email: emailValue, password: passwordValue)
+            
+            if !res {
+                isEmailError = true
+                emailHint = "Invalid Email/Password"
+                isPasswordError = true
+                passwordHint = "Invalid Password/Email"
+            }
+        }
+        
         
 //        SignUpView()
     }
