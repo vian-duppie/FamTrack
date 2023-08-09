@@ -8,17 +8,23 @@
 import SwiftUI
 
 struct OnboardingView: View {
+    @AppStorage("onboardingDone") var isOnboardingDone: Bool = false
     @State private var currentOnboardingView = 0
     
     var views : [AnyView] = [AnyView(OnboardingOneView()), AnyView(OnboardingTwoView()), AnyView(OnboardingThreeView())]
     
     var body: some View {
         VStack {
-            Text("Skip")
-                .foregroundColor(.white)
-                .font(Font.custom("Poppins-Medium", size: 16))
-                .frame(maxWidth: .infinity, alignment: .topTrailing)
-            
+            NavigationLink {
+                AccountActionView()
+                    .navigationBarHidden(true)
+            } label: {
+                Text("Skip")
+                    .foregroundColor(.white)
+                    .font(Font.custom("Poppins-Medium", size: 16))
+                    .frame(maxWidth: .infinity, alignment: .topTrailing)
+            }
+
             Spacer()
             
             VStack {
@@ -26,7 +32,6 @@ struct OnboardingView: View {
                     ForEach(0 ..< views.count, id: \.self) { index in
                         views[index]
                             .tag(index)
-                            .transition(.scale)
                     }
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
@@ -39,8 +44,23 @@ struct OnboardingView: View {
                 DotProgressBar(indexCount: views.count-1, currentIndex: currentOnboardingView)
                 
                 Spacer()
-
-                CustomIconButton(icon: "arrow.right", action: handleNextButton)
+                                
+                if currentOnboardingView < views.count - 1 {
+                    CustomIconButton(icon: "arrow.right", action: handleNextButton)
+                } else {
+                    NavigationLink {
+                        AccountActionView()
+                    } label: {
+                        Image(systemName: "arrow.right")
+                             .resizable()
+                             .scaledToFit()
+                             .frame(maxWidth: 20)
+                             .padding(20)
+                             .background(Color("SecondaryDarkBlue"))
+                             .clipShape(Circle())
+                             .foregroundColor(.white)
+                    }
+                }
             }
             .frame(maxWidth: .infinity)
         }
@@ -53,9 +73,17 @@ struct OnboardingView: View {
             withAnimation(.easeInOut(duration: 1)) {
                 currentOnboardingView += 1
             }
-        } else {
-            currentOnboardingView = 0
         }
+    }
+    
+    func test() {
+        print("HEY THIS HAVE BEEN PRESSED")
+    }
+}
+
+struct testingView: View {
+    var body: some View {
+        Text("HEY WHAT ARE YOU DOIUNG")
     }
 }
 
