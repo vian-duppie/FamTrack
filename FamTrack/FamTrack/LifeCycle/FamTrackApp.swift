@@ -6,30 +6,44 @@
 //
 
 import SwiftUI
+import Firebase
 
 @main
 struct FamTrackApp: App {
     @AppStorage("onboardingDone") var isOnboardingDone: Bool = false
     @StateObject var userStateViewModel = UserStateViewModel()
+    
+    init() {
+        FirebaseApp.configure()
+    }
+    
     var body: some Scene {
         WindowGroup {
             NavigationStack {
                 SplashView(
                     mainView: {
                         if isOnboardingDone {
-                            LoginView()
+                            ApplicationSwitcher()
                         } else {
                             OnboardingView()
                         }
                     }
                 )
-//                LoginView()
-//                OnboardingView()
-//                ContentView()
             }
             .navigationViewStyle(.stack)
             .environmentObject(userStateViewModel)
-//            SplashView()
+        }
+    }
+}
+
+struct ApplicationSwitcher: View {
+    @EnvironmentObject var userVM: UserStateViewModel
+    
+    var body: some View {
+        if userVM.isLoggedIn {
+            ContentView()
+        } else {
+            LoginView()
         }
     }
 }
