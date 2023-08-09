@@ -9,9 +9,27 @@ import SwiftUI
 
 @main
 struct FamTrackApp: App {
+    @AppStorage("onboardingDone") var isOnboardingDone: Bool = false
+    @StateObject var userStateViewModel = UserStateViewModel()
     var body: some Scene {
         WindowGroup {
-            SplashView()
+            NavigationStack {
+                SplashView(
+                    mainView: {
+                        if isOnboardingDone {
+                            LoginView()
+                        } else {
+                            OnboardingView()
+                        }
+                    }
+                )
+//                LoginView()
+//                OnboardingView()
+//                ContentView()
+            }
+            .navigationViewStyle(.stack)
+            .environmentObject(userStateViewModel)
+//            SplashView()
         }
     }
 }
