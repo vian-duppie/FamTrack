@@ -8,20 +8,21 @@
 import SwiftUI
 
 struct AccountActionView: View {
+    @AppStorage("onboardingDone") var isOnboardingDone: Bool = false
     var body: some View {
         VStack {
             ZStack {
                 Image(systemName: "person.line.dotted.person")
-                     .resizable()
-                     .scaledToFit()
-                     .frame(maxWidth: 150, maxHeight: 100)
-                 
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 150, maxHeight: 100)
+                
                 Ellipse()
                     .frame(maxWidth: 150, maxHeight: 150)
                     .background(Color("WhiteBlur"))
                     .opacity(0.07)
                     .blur(radius: 70)
-             }
+            }
             
             Spacer()
                 .frame(height: 30)
@@ -44,17 +45,49 @@ struct AccountActionView: View {
                 .frame(height: 30)
             
             HStack {
-                CustomButton(label: "Login", expand: true)
+                NavigationLink {
+                    LoginView()
+                        .navigationBarHidden(true)
+                } label: {
+                    Text("Login")
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 10)
+                        .foregroundColor(.white)
+                        .font(Font.custom("Poppins-Medium", size: 15))
+                        .frame(maxWidth: true ? .infinity : 150)
+                        .background(Color("SecondaryDarkBlue"))
+                        .cornerRadius(10)
+                        .lineLimit(1)
+                }.simultaneousGesture(TapGesture().onEnded{
+                    isOnboardingDone = true
+                })
                 
                 Spacer()
                     .frame(width: 15)
                 
-                CustomButton(label: "Sign Up", expand: true)
+                NavigationLink {
+                    SignUpView()
+                        .navigationBarHidden(true)
+                } label: {
+                    Text("Sign Up")
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 10)
+                        .foregroundColor(.white)
+                        .font(Font.custom("Poppins-Medium", size: 15))
+                        .frame(maxWidth: .infinity)
+                        .background(Color("SecondaryDarkBlue"))
+                        .cornerRadius(10)
+                        .lineLimit(1)
+                }.simultaneousGesture(TapGesture().onEnded{
+                    isOnboardingDone = true
+                })
+                
             }
             .frame(maxWidth: .infinity)
         }
         .padding(30)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .navigationBarHidden(true)
     }
 }
 
