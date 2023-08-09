@@ -7,12 +7,17 @@
 
 import SwiftUI
 
-struct SplashView: View {
-    @State var isActive: Bool = true
+struct SplashView<Content: View>: View {
+    // Is the SplashView Done
+    @State var isActive: Bool = false
+    @ViewBuilder var mainView: Content
+    
+    // Should it show onboarding
+    @AppStorage("onboardingDone") var isOnboardingDone: Bool = false
     var body: some View {
         ZStack {
             if self.isActive {
-                ContentView()
+                mainView
             } else {
                 ZStack {
                     VStack {
@@ -30,10 +35,10 @@ struct SplashView: View {
                     .frame(maxWidth: 250, maxHeight: .infinity)
                     
                     Ellipse()
-                    .frame(maxWidth: 250, maxHeight: 250)
-                    .background(Color("WhiteBlur"))
-                    .opacity(0.07)
-                    .blur(radius: 70)
+                        .frame(maxWidth: 250, maxHeight: 250)
+                        .background(Color("WhiteBlur"))
+                        .opacity(0.07)
+                        .blur(radius: 70)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -50,8 +55,8 @@ struct SplashView: View {
     }
 }
 
-struct SplashView_Previews: PreviewProvider {
-    static var previews: some View {
-        SplashView()
-    }
-}
+//struct SplashView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        SplashView()
+//    }
+//}
