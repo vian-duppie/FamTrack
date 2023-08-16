@@ -17,7 +17,6 @@ struct OnboardingView: View {
         VStack {
             NavigationLink {
                 AccountActionView()
-                    .navigationBarHidden(true)
             } label: {
                 Text("Skip")
                     .foregroundColor(.white)
