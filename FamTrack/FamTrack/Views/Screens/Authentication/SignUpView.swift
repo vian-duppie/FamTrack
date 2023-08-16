@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SignUpView: View {
+    @EnvironmentObject var userVM: UserStateViewModel
+    
     @State var usernameHint: String = ""
     @State var isUsernameError: Bool = false
     @State var emailHint: String = ""
@@ -38,24 +40,17 @@ struct SignUpView: View {
             heading: "Sign Up",
             subHeading: "Complete the form below to create your FamTrack account",
             mainAction: handleSignUp,
-            secondaryAction: AnyView(
-                NavigationLink(
-                     destination: LoginView(),  // Navigate to SignUpView
-                     label: {
-                         Text("Login")
-                             .foregroundColor(.white)
-                             .font(Font.custom("Poppins-Light", size: 13))
-                             .opacity(0.67)
-                             .underline()
-                     }
-                 )
-            ),
+            secondaryAction: switchToLogin,
             lineButtonLabel: "Already have an account?",
             lineButtonText: "Log In",
             lineButtonOpacity: 0.67,
             buttonLabel: "Sign Up"
         )
         .navigationBarHidden(true)
+    }
+    
+    func switchToLogin() {
+        userVM.showLogin = true
     }
     
     func handleSignUp() {
@@ -86,7 +81,7 @@ struct SignUpView: View {
             
             passwordHint = "Please enter a password"
             isPasswordError = true
-        } else if passwordValue.count < 6 {
+        } else if passwordValue.count < 5 {
             canSignUp = false
             
             passwordHint = "Password too short \(passwordValue.count)/5"
@@ -168,9 +163,3 @@ struct SignUpForm: View {
         isPassword.toggle()
     }
 }
-
-//struct SignUpView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        SignUpView()
-//    }
-//}
