@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ApplicationSwitcher: View {
+    @EnvironmentObject var userVM: UserStateViewModel
     var body: some View {
-        @EnvironmentObject var userVM: UserStateViewModel
         if userVM.isLoggedIn {
             SetupView()
         } else {
