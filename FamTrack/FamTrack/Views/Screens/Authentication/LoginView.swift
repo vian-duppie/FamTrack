@@ -96,8 +96,6 @@ struct LoginView: View {
                 passwordHint = "Invalid Password/Email"
                 return
             }
-            
-            userVM.isLoggedIn = true
         }
     }
     
