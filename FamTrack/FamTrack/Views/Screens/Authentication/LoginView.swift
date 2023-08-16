@@ -11,6 +11,7 @@ import Foundation
 struct LoginView: View {
     @EnvironmentObject var userVM: UserStateViewModel
     
+    // Form Values
     @State var emailHint: String = ""
     @State var isEmailError: Bool = false
     @State var passwordHint: String = ""
@@ -18,7 +19,8 @@ struct LoginView: View {
     @State var emailValue: String = ""
     @State var passwordValue: String = ""
     
-    @State var canLogin: Bool = true
+    // Manages whether user can login
+//    @State var canLogin: Bool = true
     
     var body: some View {
         ZStack {
@@ -43,18 +45,7 @@ struct LoginView: View {
                 heading: "Log In",
                 subHeading: "Complete the form below to log in",
                 mainAction: handleLogin,
-                secondaryAction: AnyView(
-                    NavigationLink(
-                         destination: SignUpView(),  // Navigate to SignUpView
-                         label: {
-                             Text("Sign Up")
-                                 .foregroundColor(.white)
-                                 .font(Font.custom("Poppins-Light", size: 13))
-                                 .opacity(0.67)
-                                 .underline()
-                         }
-                     )
-                ),
+                secondaryAction: switchToSignUp,
                 lineButtonLabel: "Don't have an account?",
                 lineButtonText: "Sign Up",
                 lineButtonOpacity: 0.67,
@@ -62,15 +53,19 @@ struct LoginView: View {
             )
             .navigationBarHidden(true)
         }
-        }
+    }
+    
+    func switchToSignUp() {
+        userVM.showLogin = false
+    }
     
     private func handleLogin() {
+        var canLogin = true
         clearErrors()
-        canLogin = true
-        
+
         if emailValue.isEmpty {
             canLogin = false
-            
+
             emailHint = "Please enter an email"
             isEmailError = true
         } else {
@@ -79,31 +74,31 @@ struct LoginView: View {
                 isEmailError = true
             }
         }
-        
+
         if passwordValue.isEmpty {
             canLogin = false
-            
+
             passwordHint = "Please enter a password"
             isPasswordError = true
         }
-        
+
         if !canLogin {
             return
         }
         
         Task {
             let res = await userVM.signIn(email: emailValue, password: passwordValue)
-            
+
             if !res {
                 isEmailError = true
                 emailHint = "Invalid Email/Password"
                 isPasswordError = true
                 passwordHint = "Invalid Password/Email"
+                return
             }
+            
+            userVM.isLoggedIn = true
         }
-        
-        
-//        SignUpView()
     }
     
     private func clearErrors() {
@@ -163,9 +158,3 @@ struct LoginForm: View {
         isPassword.toggle()
     }
 }
-
-//struct LoginView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        AuthenticationLayout()
-//    }
-//}
