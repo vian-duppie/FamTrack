@@ -13,7 +13,7 @@ struct AuthenticationLayout<Content: View>: View {
     var heading: String = "Heading"
     var subHeading: String = "Subheading"
     var mainAction: () -> Void = {}
-    var secondaryAction: AnyView
+    var secondaryAction: () -> Void = {}
     var lineButtonLabel: String = "Line Label"
     var lineButtonText: String = "Line Button Text"
     var lineButtonOpacity: Double = 1
@@ -75,7 +75,8 @@ struct AuthenticationLayout<Content: View>: View {
                             .font(Font.custom("Poppins-Light", size: 13))
                             .opacity(lineButtonOpacity > 0 ? lineButtonOpacity : 1)
                         
-                        secondaryAction
+                        CustomLineButton(label: lineButtonText, clicked: secondaryAction, opacity: lineButtonOpacity)
+    //                        .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
                 }
