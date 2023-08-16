@@ -11,15 +11,27 @@ import Firebase
 @MainActor
 class UserStateViewModel: ObservableObject {
     
+    @Published var showLogin = true
     @Published var isLoggedIn = false
     @Published var isBusy = false
     
+    func showLoginView() {
+        showLogin = true
+    }
+    
+    func showSignUpView() {
+        showLogin = false
+    }
+    
+    
     func signIn(email: String, password: String) async -> Bool  {
         isBusy = true
+        
         do{
             try await Auth.auth().signIn(withEmail: email, password: password)
             isLoggedIn = true
             isBusy = false
+            
             return true
         }catch{
             print("Failure \(error.localizedDescription)")
@@ -27,6 +39,7 @@ class UserStateViewModel: ObservableObject {
             
             return false
         }
+        
     }
     
     func signUp(username: String, email: String, password: String) async -> Bool {
@@ -35,13 +48,16 @@ class UserStateViewModel: ObservableObject {
     
     func signOut() async -> Result<Bool, Error>  {
         isBusy = true
+        
         do{
             try await Task.sleep(nanoseconds: 1_000_000_000)
             isLoggedIn = false
             isBusy = false
+            
             return .success(true)
         }catch{
             isBusy = false
+            
             return .failure(error)
         }
     }
