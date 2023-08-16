@@ -9,6 +9,8 @@ import SwiftUI
 
 struct AccountActionView: View {
     @AppStorage("onboardingDone") var isOnboardingDone: Bool = false
+    @EnvironmentObject var userVM: UserStateViewModel
+    
     var body: some View {
         VStack {
             ZStack {
@@ -46,8 +48,7 @@ struct AccountActionView: View {
             
             HStack {
                 NavigationLink {
-                    LoginView()
-                        .navigationBarHidden(true)
+                    ApplicationSwitcher()
                 } label: {
                     Text("Login")
                         .padding(.horizontal, 30)
@@ -60,14 +61,14 @@ struct AccountActionView: View {
                         .lineLimit(1)
                 }.simultaneousGesture(TapGesture().onEnded{
                     isOnboardingDone = true
+                    userVM.showLoginView()
                 })
-                
+
                 Spacer()
                     .frame(width: 15)
-                
+
                 NavigationLink {
-                    SignUpView()
-                        .navigationBarHidden(true)
+                    ApplicationSwitcher()
                 } label: {
                     Text("Sign Up")
                         .padding(.horizontal, 30)
@@ -80,6 +81,7 @@ struct AccountActionView: View {
                         .lineLimit(1)
                 }.simultaneousGesture(TapGesture().onEnded{
                     isOnboardingDone = true
+                    userVM.showSignUpView()
                 })
                 
             }
