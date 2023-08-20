@@ -23,6 +23,13 @@ struct SignUpView: View {
     @State var canSignUp: Bool = true
     
     var body: some View {
+        if userVM.isBusy {
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.black.opacity(0.3))
+                .zIndex(1)
+        }
+        
         AuthenticationLayout(
             formContent: {
                 SignUpForm(
@@ -90,6 +97,18 @@ struct SignUpView: View {
         
         if !canSignUp {
             return
+        }
+        
+        Task {
+            let res = await userVM.signUp(username: usernameValue, email: emailValue, password: passwordValue)
+
+            if !res {
+                isEmailError = true
+                emailHint = "Invalid Email/Password"
+                isPasswordError = true
+                passwordHint = "Invalid Password/Email"
+                return
+            }
         }
     }
     
