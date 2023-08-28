@@ -17,7 +17,8 @@ struct SetupView: View {
     var views: [AnyView] = [
         AnyView(SetupOneView()),
         AnyView(SetupTwoView()),
-        AnyView(SetupThreeView())
+        AnyView(SetupThreeView()),
+        AnyView(SetupFourView())
     ]
     
     var body: some View {
@@ -28,6 +29,7 @@ struct SetupView: View {
                 .environmentObject(setupViewModel)
 //                .environmentObject(userVM)
         }
+//        .padding(.horizontal, 30)
         .padding(30)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationBarHidden(true)
