@@ -19,10 +19,10 @@ struct SetupThreeView: View {
                 Image(systemName: "mappin.and.ellipse")
                      .resizable()
                      .scaledToFit()
-                     .frame(maxWidth: 100, maxHeight: 100)
+                     .frame(maxWidth: 70, maxHeight: 70)
                  
                 Ellipse()
-                    .frame(maxWidth: 150, maxHeight: 150)
+                    .frame(maxWidth: 100, maxHeight: 100)
                     .background(Color("WhiteBlur"))
                     .opacity(0.07)
                     .blur(radius: 40)
@@ -41,6 +41,7 @@ struct SetupThreeView: View {
             }
             
             Spacer()
+                .frame(height: 30)
             
             CustomInput(
                 label: "Place Name",
@@ -111,7 +112,7 @@ struct SetupThreeView: View {
                 
                 VStack {
                     Button(action: {
-//                        createGroup()
+                        setupVM.currentView += 1
                     }) {
                         Text("Continue")
                             .padding(.horizontal, 30)
@@ -140,8 +141,6 @@ struct SetupThreeView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            
-            
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
