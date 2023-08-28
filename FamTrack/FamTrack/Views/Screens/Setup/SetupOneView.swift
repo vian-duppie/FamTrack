@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct SetupOneView: View {
+    @EnvironmentObject var userVM: UserStateViewModel
+    @EnvironmentObject var setupVM: SetupViewModel
+    
     var body: some View {
         VStack {
             Spacer()
@@ -40,7 +43,7 @@ struct SetupOneView: View {
                 .frame(height: 40)
             
             VStack(spacing: 30) {
-                Text("Welcome user")
+                Text("Welcome \(userVM.userDetails.username)")
                     .foregroundColor(Color("SecondaryDarkBlue"))
                     .font(Font.custom("Poppins-Medium", size: 32))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -50,10 +53,31 @@ struct SetupOneView: View {
                     .font(Font.custom("Poppins-Regular", size: 17))
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .onAppear {
+//                print(userVM.userDetails?.username)
+            }
             
             Spacer()
+            
+            Button(action: {
+                setupVM.currentView += 1
+            }) {
+                Text("Continue")
+                    .padding(.horizontal, 30)
+                    .padding(.vertical, 10)
+                    .foregroundColor(.white)
+                    .font(Font.custom("Poppins-Medium", size: 15))
+                    .frame(maxWidth: 150)
+                    .background(Color("SecondaryDarkBlue"))
+                    .cornerRadius(10)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            userVM.getUserDetails()
+        }
     }
 }
 
