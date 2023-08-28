@@ -8,10 +8,16 @@
 import SwiftUI
 
 struct ApplicationSwitcher: View {
+    @AppStorage("setupDone") var isSetupDone: Bool = false
+    
     @EnvironmentObject var userVM: UserStateViewModel
     var body: some View {
         if userVM.isLoggedIn {
-            SetupView()
+            if isSetupDone {
+                HomeView()
+            } else {
+                SetupView()
+            }
         } else {
             AuthSwitcher()
         }
