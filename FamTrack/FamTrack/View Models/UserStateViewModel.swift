@@ -15,6 +15,47 @@ class UserStateViewModel: ObservableObject {
     @Published var showLogin = true
     @Published var isLoggedIn = false
     @Published var isBusy = false
+    @Published var userDetails: User
+    @Published var username = ""
+    
+    init() {
+        userDetails = User()
+        checkAuth()
+    }
+    
+    func getUserDetails() {
+        let userId = getUserId()
+
+        db.collection("users").document(userId).getDocument { [weak self] document, error in
+            guard let self = self else { return }
+
+            if let document = document, document.exists {
+                if let username = document.data()?["username"] as? String {
+                    DispatchQueue.main.async { // Make sure to update UI on the main thread
+                        self.userDetails.username = username
+                        self.username = username
+                    }
+//                    print(document.data())
+//                    print("This is your username \(self.username)")
+//                    print(userDetails?.username)
+                }
+            }
+        }
+    }
+
+    
+    func getUserId() -> String {
+        return Auth.auth().currentUser?.uid ?? "No user id found"
+    }
+    
+    func checkAuth() {
+        if Auth.auth().currentUser?.uid != nil {
+            getUserDetails()
+            isLoggedIn = true
+        } else {
+            isLoggedIn = false
+        }
+    }
     
     func showLoginView() {
         showLogin = true
@@ -82,19 +123,13 @@ class UserStateViewModel: ObservableObject {
         }
     }
     
-    func signOut() async -> Result<Bool, Error>  {
-        isBusy = true
-        
-        do{
-            try await Task.sleep(nanoseconds: 1_000_000_000)
+    func signOut() async {
+        do {
+            try Auth.auth().signOut()
+            
             isLoggedIn = false
-            isBusy = false
-            
-            return .success(true)
-        }catch{
-            isBusy = false
-            
-            return .failure(error)
+        } catch let signOutError as NSError {
+          print("Error signing out: %@", signOutError)
         }
     }
 }
