@@ -9,8 +9,8 @@ import SwiftUI
 import MapKit
 
 struct SetupFourView: View {
-    @State var triggerViewUpdate = 0
-    
+    @AppStorage("setupDone") var isSetupDone: Bool = false
+    @EnvironmentObject var userVM: UserStateViewModel
     @EnvironmentObject var setupVM: SetupViewModel
     @State var isPlaceNameError = false
     @State var placeNameHint = ""
@@ -85,36 +85,11 @@ struct SetupFourView: View {
                 }
                 
                 Spacer()
-                    .frame(height: 25)
-                
-//                HStack(spacing: 10) {
-//                    Image(systemName: "dot.circle")
-//                        .resizable()
-//                        .foregroundColor(Color("Red"))
-//                        .frame(width: 20, height: 20)
-//                    
-//                    VStack(spacing: 5) {
-//                        Text("Your Current Location")
-//                            .foregroundColor(Color("TextWhite"))
-//                            .font(Font.custom("Poppins-Light", size: 15))
-//                            .frame(maxWidth: .infinity, alignment: .leading)
-//                        
-//                        Text(
-//                            placemarkError ?
-//                            "\(currentPlacemark?.name ?? "") \(currentPlacemark?.subLocality ?? ""), \(currentPlacemark?.locality ?? "")" : "Could not find location name"
-//                        )
-//                            .foregroundColor(Color("TextGray"))
-//                            .font(Font.custom("Poppins-Light", size: 14))
-//                            .frame(maxWidth: .infinity, alignment: .leading)
-//                    }
-//                }
-                
-                Spacer()
                     .frame(height: 30)
                 
                 VStack {
                     Button(action: {
-                        setupVM.currentView += 1
+                        createGroup()
                     }) {
                         Text("Add Place")
                             .padding(.horizontal, 30)
@@ -131,46 +106,28 @@ struct SetupFourView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-//        .onChange(of: manager.region.center.latitude) { _ in
-//            placemarkError = false
-//
-//            manager.lookUpCurrentLocation { (placemark) in
-//                if let placemark = placemark {
-//                    self.currentPlacemark = placemark
-//                } else {
-//                    placemarkError = true
-//                    print("Error fetching current location.")
-//                }
-//            }
-//        }
-//        .onAppear {
-//            manager.lookUpCurrentLocation { (placemark) in
-//                if let placemark = placemark {
-//                    self.currentPlacemark = placemark
-//                    print("You live here",  placemark.country)
-//                    print("1", placemark.areasOfInterest)
-//                    print("2",placemark.administrativeArea)
-//                    print("3",placemark.inlandWater)
-//                    print("4",placemark.isoCountryCode)
-//                    print("5",placemark.locality)
-//                    print("6",placemark.location)
-//                    print("7",placemark.name)
-//                    print("8",placemark.postalCode)
-//                    print("9", placemark.region)
-//                    print("10", placemark.subAdministrativeArea)
-//                    print("11", placemark.subLocality)
-//                    print("12", placemark.thoroughfare)
-//                    print("13", placemark.timeZone)
-//
-//                    print(placemark.name, " ", placemark.subLocality, ", ", placemark.locality)
-//                } else {
-//                    print("Error fetching current location.")
-//                }
-//            }
-//        }
-//        .scrollBounceBehavior(.basedOnSize)
+        .scrollBounceBehavior(.basedOnSize)
         .scrollIndicators(.hidden)
+    }
+    
+    func createGroup() {
+        isPlaceNameError = false
+        placeNameHint = ""
         
+        if setupVM.placeName.isEmpty {
+            isPlaceNameError = true
+            placeNameHint = "Please enter the name of the place"
+            return
+        }
+        
+        setupVM.createGroup(userId: userVM.getUserId(), currentUserLat: manager.region.center.latitude, currentUserLong: manager.region.center.longitude) { success in
+            if success {
+                print("Doc was created")
+                isSetupDone = true
+            } else {
+                print("Doc was not created")
+            }
+        }
     }
 }
 
