@@ -17,7 +17,7 @@ struct SetupView: View {
     var views: [AnyView] = [
         AnyView(SetupOneView()),
         AnyView(SetupTwoView()),
-        AnyView(SetupThreeView()),
+//        AnyView(SetupThreeView()),
         AnyView(SetupFourView())
     ]
     
