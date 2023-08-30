@@ -8,10 +8,13 @@
 import SwiftUI
 
 struct DropdownButton: View {
+    @EnvironmentObject var userVM: UserStateViewModel
     @State var isDroppedDown = false
     @Binding var displayText: String
     var options: [DropdownOption]
-    var onSelect: ((_ key: String) -> Void)?
+    var onSelect: ((_ key: Group) -> Void)?
+    
+    
     var body: some View {
         Button(action: {
             withAnimation(Animation.easeInOut(duration: 1)) {
@@ -53,17 +56,17 @@ struct DropdownButton: View {
 
 struct DropdownOption: Hashable {
     public static func == (lhs: DropdownOption, rhs: DropdownOption) -> Bool {
-        return lhs.key == rhs.key
+        return lhs.key.id == rhs.key.id
     }
     
-    var key: String
+    var key: Group
     var val: String
 }
 
 struct DropdownOptionElement: View {
     var val: String
-    var key: String
-    var onSelect: ((_ key: String) -> Void)?
+    var key: Group
+    var onSelect: ((_ key: Group) -> Void)?
     
     var body: some View {
         Button(action: {
@@ -80,7 +83,7 @@ struct DropdownOptionElement: View {
 
 struct Dropdown: View {
     var options: [DropdownOption]
-    var onSelect: ((_ key: String) -> Void)?
+    var onSelect: ((_ key: Group) -> Void)?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
