@@ -77,6 +77,42 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         print("Updating user location when launching app")
     }
     
+    // Clean up top speeds older than 7 days and keep only the highest speed entry for each day
+    func filterAndUpdateTopSpeeds(_ user: inout User, in userRef: DocumentReference) {
+        // Create a dictionary to store the highest speed entry for each day
+        var highestSpeedsByDate: [Date: Int] = [:]
+
+        // Iterate through topSpeeds to find the highest speed entry for each day
+        for entry in user.topSpeeds {
+            let calendar = Calendar.current
+            let dateComponents = calendar.dateComponents([.year, .month, .day], from: entry.date)
+            if let date = calendar.date(from: dateComponents) {
+                if let existingSpeed = highestSpeedsByDate[date] {
+                    // Compare the current entry's speed with the existing highest speed for the day
+                    if entry.speed > existingSpeed {
+                        highestSpeedsByDate[date] = entry.speed
+                    }
+                } else {
+                    // If no entry exists for the day, add the current entry as the highest speed
+                    highestSpeedsByDate[date] = entry.speed
+                }
+            }
+        }
+
+        // Filter topSpeeds to keep only the entries with the highest speeds for each day
+        user.topSpeeds = user.topSpeeds.filter { entry in
+            let calendar = Calendar.current
+            let dateComponents = calendar.dateComponents([.year, .month, .day], from: entry.date)
+            if let date = calendar.date(from: dateComponents) {
+                if let highestSpeed = highestSpeedsByDate[date] {
+                    return entry.speed == highestSpeed
+                }
+            }
+            return false
+        }
+    }
+
+
     func updateUserLocation() {
         guard var user = user else {
             return
@@ -103,12 +139,18 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 // Append it to the user's top speeds
                 user.topSpeeds.append(newTopSpeedEntry)
             }
+            
 
             // Clean up top speeds older than 7 days
             let cutoffDate = Date().addingTimeInterval(-7 * 24 * 60 * 60) // 7 days in seconds
             user.topSpeeds = user.topSpeeds.filter { $0.date > cutoffDate }
 
+            // Filter and update top speeds
+            filterAndUpdateTopSpeeds(&user, in: userRef)
+
             let topSpeedsData = user.topSpeeds.map { ["speed": $0.speed, "date": $0.date] as [String : Any] }
+            
+//            cleanUpTopSpeeds()
             
             if isDriving {
                 user.totalDistanceDriven += Double(distanceToAdd)
@@ -199,14 +241,32 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             userSpeed = speedKmPerHour
             
             if speedKmPerHour > topSpeed {
+                print("A new topSpeed is achieved")
                 topSpeed = speedKmPerHour
+
+                // Check if there is already a top speed entry for today
+                let today = Calendar.current.startOfDay(for: Date())
                 
-                let newTopSpeedEntry = TopSpeedEntry(speed: topSpeed, date: Date())
-                topSpeeds.append(newTopSpeedEntry)
-                
-//                print("***Firebase will be updated*** because the user is driving a new top speed")
-                shouldUpdatedUserLocation = true
+                if let existingEntryIndex = topSpeeds.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: today) }) {
+                    // Update the existing entry if today's entry already exists
+                    topSpeeds[existingEntryIndex].speed = topSpeed
+                    topSpeeds[existingEntryIndex].date = today
+
+                    // This is where you update the existing top speed entry for the day
+                    shouldUpdatedUserLocation = true
+                } else {
+                    // Create a new top speed entry for today
+                    let newTopSpeedEntry = TopSpeedEntry(speed: topSpeed, date: today)
+                    topSpeeds.append(newTopSpeedEntry)
+
+                    // This is where a new top speed entry is added to the topSpeeds array
+                    shouldUpdatedUserLocation = true
+                }
             }
+
+
+
+
             
             if !isDriving {
                 // The user started driving
@@ -238,7 +298,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         if shouldUpdatedUserLocation {
 //            print("((::****Firebase updating****::))")
-            updateUserLocation()
+//            updateUserLocation()
             shouldUpdatedUserLocation = false
         }
         
@@ -298,5 +358,22 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             completionHandler(nil)
         }
     }
+    
+    func lookUpLocation(for coordinate: CLLocationCoordinate2D, completionHandler: @escaping (CLPlacemark?) -> Void) {
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        let geocoder = CLGeocoder()
+
+        // Look up the location and pass it to the completion handler
+        geocoder.reverseGeocodeLocation(location) { (placemarks, error) in
+            if error == nil {
+                let firstLocation = placemarks?.first
+                completionHandler(firstLocation)
+            } else {
+                // An error occurred during geocoding.
+                completionHandler(nil)
+            }
+        }
+    }
+
 }
 
