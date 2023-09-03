@@ -14,7 +14,7 @@ struct SetupFourView: View {
     @EnvironmentObject var setupVM: SetupViewModel
     @State var isPlaceNameError = false
     @State var placeNameHint = ""
-
+    
     @StateObject var manager = LocationManager()
     
     @State private var currentPlacemark: CLPlacemark?
@@ -27,10 +27,10 @@ struct SetupFourView: View {
             VStack {
                 ZStack {
                     Image(systemName: "mappin.and.ellipse")
-                         .resizable()
-                         .scaledToFit()
-                         .frame(maxWidth: 70, maxHeight: 70)
-                     
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 70, maxHeight: 70)
+                    
                     Ellipse()
                         .frame(maxWidth: 100, maxHeight: 100)
                         .background(Color("WhiteBlur"))
