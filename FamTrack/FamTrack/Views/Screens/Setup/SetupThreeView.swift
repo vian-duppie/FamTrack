@@ -123,7 +123,6 @@ struct SetupThreeView: View {
                             .cornerRadius(10)
                             .lineLimit(1)
                     }
-    //                .frame(maxWidth: .infinity, alignment: .trailing)
                     
                     Spacer()
                         .frame(height: 15)
@@ -137,7 +136,6 @@ struct SetupThreeView: View {
                             .foregroundColor(.white)
                             .font(Font.custom("Poppins-Medium", size: 16))
                     }
-    //                .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }

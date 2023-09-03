@@ -23,7 +23,7 @@ struct OnboardingView: View {
                     .font(Font.custom("Poppins-Medium", size: 16))
                     .frame(maxWidth: .infinity, alignment: .topTrailing)
             }
-
+            
             Spacer()
             
             VStack {
@@ -43,7 +43,7 @@ struct OnboardingView: View {
                 DotProgressBar(indexCount: views.count-1, currentIndex: currentOnboardingView)
                 
                 Spacer()
-                                
+                
                 if currentOnboardingView < views.count - 1 {
                     CustomIconButton(icon: "arrow.right", action: handleNextButton)
                 } else {
@@ -51,13 +51,13 @@ struct OnboardingView: View {
                         AccountActionView()
                     } label: {
                         Image(systemName: "arrow.right")
-                             .resizable()
-                             .scaledToFit()
-                             .frame(maxWidth: 20)
-                             .padding(20)
-                             .background(Color("SecondaryDarkBlue"))
-                             .clipShape(Circle())
-                             .foregroundColor(.white)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: 20)
+                            .padding(20)
+                            .background(Color("SecondaryDarkBlue"))
+                            .clipShape(Circle())
+                            .foregroundColor(.white)
                     }
                 }
             }
@@ -74,20 +74,5 @@ struct OnboardingView: View {
             }
         }
     }
-    
-    func test() {
-        print("HEY THIS HAVE BEEN PRESSED")
-    }
 }
 
-struct testingView: View {
-    var body: some View {
-        Text("HEY WHAT ARE YOU DOIUNG")
-    }
-}
-
-struct OnboardingView_Previews: PreviewProvider {
-    static var previews: some View {
-        OnboardingView()
-    }
-}

@@ -1,4 +1,4 @@
-//
+S//
 //  FamTrackApp.swift
 //  FamTrack
 //
@@ -7,11 +7,15 @@
 
 import SwiftUI
 import Firebase
+import CoreLocation
 
 @main
 struct FamTrackApp: App {
     @AppStorage("onboardingDone") var isOnboardingDone: Bool = false
+    @AppStorage("setupDone") var isSetupDone: Bool = false
     @StateObject var userStateViewModel = UserStateViewModel()
+    @StateObject var locationManager = LocationManager()
+    @StateObject var healthManager = HealthManager()
     
     init() {
         FirebaseApp.configure()
@@ -32,18 +36,18 @@ struct FamTrackApp: App {
             }
             .navigationViewStyle(.stack)
             .environmentObject(userStateViewModel)
+            .environmentObject(locationManager)
+            .environmentObject(healthManager)
         }
     }
-}
-
-struct ApplicationSwitcher: View {
-    @EnvironmentObject var userVM: UserStateViewModel
     
-    var body: some View {
-        if userVM.isLoggedIn {
-            ContentView()
-        } else {
-            LoginView()
-        }
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        _ = LocationManager()
+        
+        var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+        backgroundTask = application.beginBackgroundTask(expirationHandler: {
+            application.endBackgroundTask(backgroundTask)
+            backgroundTask = .invalid
+        })
     }
 }

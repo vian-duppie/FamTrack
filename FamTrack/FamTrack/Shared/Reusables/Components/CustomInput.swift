@@ -17,12 +17,11 @@ struct CustomInput: View {
     var hintLabel = ""
     
     @Binding var value: String
-
+    
     var body: some View {
         VStack {
             Text(label)
                 .foregroundColor(.white)
-//                .opacity(0.6)
                 .font(Font.custom("Poppins-Medium", size: 17))
                 .frame(maxWidth: .infinity, alignment: .leading)
             
@@ -35,7 +34,7 @@ struct CustomInput: View {
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
                         .font(Font.custom("Poppins-Light", size: 15))
-                        
+                    
                 } else {
                     TextField(placeholder, text: $value)
                         .textInputAutocapitalization(.never)
@@ -46,10 +45,10 @@ struct CustomInput: View {
                 if !icon.isEmpty {
                     Button(action: iconClicked) {
                         Image(systemName: icon)
-                             .resizable()
-                             .scaledToFit()
-                             .frame(maxWidth: 20)
-                             .foregroundColor(.white)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: 20)
+                            .foregroundColor(.white)
                     }
                 }
             }
@@ -68,14 +67,4 @@ struct CustomInput: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
-    
-    private func iconButtonTap() {
-        print("The icon has been pressed")
-    }
 }
-
-//struct CustomInput_Previews: PreviewProvider {
-//    static var previews: some View {
-//        CustomInput(isPasswordInput: true, label: "Label", placeholder: "Placeholder")
-//    }
-//}

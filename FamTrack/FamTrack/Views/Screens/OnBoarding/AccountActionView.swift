@@ -63,10 +63,10 @@ struct AccountActionView: View {
                     isOnboardingDone = true
                     userVM.showLoginView()
                 })
-
+                
                 Spacer()
                     .frame(width: 15)
-
+                
                 NavigationLink {
                     ApplicationSwitcher()
                 } label: {

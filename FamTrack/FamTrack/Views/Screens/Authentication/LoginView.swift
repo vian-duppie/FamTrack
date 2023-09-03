@@ -19,9 +19,6 @@ struct LoginView: View {
     @State var emailValue: String = ""
     @State var passwordValue: String = ""
     
-    // Manages whether user can login
-//    @State var canLogin: Bool = true
-    
     var body: some View {
         ZStack {
             if userVM.isBusy {
@@ -62,10 +59,10 @@ struct LoginView: View {
     private func handleLogin() {
         var canLogin = true
         clearErrors()
-
+        
         if emailValue.isEmpty {
             canLogin = false
-
+            
             emailHint = "Please enter an email"
             isEmailError = true
         } else {
@@ -74,21 +71,21 @@ struct LoginView: View {
                 isEmailError = true
             }
         }
-
+        
         if passwordValue.isEmpty {
             canLogin = false
-
+            
             passwordHint = "Please enter a password"
             isPasswordError = true
         }
-
+        
         if !canLogin {
             return
         }
         
         Task {
             let res = await userVM.signIn(email: emailValue, password: passwordValue)
-
+            
             if !res {
                 isEmailError = true
                 emailHint = "Invalid Email/Password"

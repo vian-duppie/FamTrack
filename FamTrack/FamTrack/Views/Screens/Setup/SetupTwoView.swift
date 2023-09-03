@@ -94,12 +94,11 @@ struct SetupTwoView: View {
                             .cornerRadius(10)
                             .lineLimit(1)
                     }
-    //                .frame(maxWidth: .infinity, alignment: .trailing)
                     
                     Spacer()
                         .frame(height: 15)
                     
-                    Button(action: {
+                    Button(action: {c
                         withAnimation {
                             isSetupDone = true
                         }
@@ -108,10 +107,9 @@ struct SetupTwoView: View {
                             .foregroundColor(.white)
                             .font(Font.custom("Poppins-Medium", size: 16))
                     }
-    //                .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
-
+                
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -123,7 +121,7 @@ struct SetupTwoView: View {
             groupNameHint = "Enter group name"
             return
         }
-//        setupVM.groupName = groupNameValue
+        
         setupVM.currentView += 1
     }
 }

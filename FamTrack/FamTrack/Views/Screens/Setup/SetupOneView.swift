@@ -53,9 +53,6 @@ struct SetupOneView: View {
                     .font(Font.custom("Poppins-Regular", size: 17))
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .onAppear {
-//                print(userVM.userDetails?.username)
-            }
             
             Spacer()
             

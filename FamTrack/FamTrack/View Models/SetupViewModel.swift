@@ -32,7 +32,6 @@ class SetupViewModel: ObservableObject {
             let hashedData = SHA256.hash(data: inputData)
             let codeData = hashedData.prefix(6)
             
-            print(codeData)
             let code = codeData.map{String(format: "%02hhx", $0)}.joined()
             return String(code.prefix(6)).uppercased()
         }
@@ -42,17 +41,13 @@ class SetupViewModel: ObservableObject {
     
     func createGroup(userId: String, currentUserLat: Double, currentUserLong: Double, completion: @escaping (Bool) -> Void) {
         let leaderData = Leader(userId: userId, role: selectedRole)
-        let locationData = Location(lat: Double(currentUserLat), long: Double(currentUserLong), name: placeName)
+        let locationData = Location(lat: String(currentUserLat).replacingOccurrences(of: ",", with: "."), long: String(currentUserLong).replacingOccurrences(of: ",", with: "."), name: placeName)
         let inviteCode = generateUniqueCode(placeName: placeName, groupName: groupName, userId: userId)
         
         let locationDictionary: [String: Any] = [
             "lat": locationData.lat,
             "long": locationData.long,
             "name": locationData.name
-        ]
-        
-        let memberDictionary: [String: Any] = [
-            "userId": userId
         ]
         
         let groupData: [String: Any] = [
@@ -63,7 +58,7 @@ class SetupViewModel: ObservableObject {
             ],
             "locations": [locationDictionary],
             "inviteCode": inviteCode,
-            "members": [memberDictionary]
+            "members": [userId]
         ]
         
         let docRef = db.collection("Groups").document()

@@ -101,7 +101,7 @@ struct SignUpView: View {
         
         Task {
             let res = await userVM.signUp(username: usernameValue, email: emailValue, password: passwordValue)
-
+            
             if !res {
                 isEmailError = true
                 emailHint = "Invalid Email/Password"

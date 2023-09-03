@@ -26,9 +26,3 @@ struct CustomButton: View {
         .lineLimit(1)
     }
 }
-
-struct CustomButton_Previews: PreviewProvider {
-    static var previews: some View {
-        CustomButton()
-    }
-}

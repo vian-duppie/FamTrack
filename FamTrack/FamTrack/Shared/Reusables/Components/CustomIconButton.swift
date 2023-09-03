@@ -14,13 +14,13 @@ struct CustomIconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
-                 .resizable()
-                 .scaledToFit()
-                 .frame(maxWidth: 20)
-                 .padding(20)
-                 .background(Color("SecondaryDarkBlue"))
-                 .clipShape(Circle())
-                 .foregroundColor(.white)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: 20)
+                .padding(20)
+                .background(Color("SecondaryDarkBlue"))
+                .clipShape(Circle())
+                .foregroundColor(.white)
         }
     }
 }
