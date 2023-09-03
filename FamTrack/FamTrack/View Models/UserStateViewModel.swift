@@ -20,7 +20,7 @@ class UserStateViewModel: ObservableObject {
     @Published var username = ""
     @Published var userId = ""
     
-    @Published var selectedGroup: Group = Group(name: "", inviteCode: "")
+    @Published var selectedGroup: Group = Group(name: "", members: [], inviteCode: "")
     @Published var selectedGroupUsers: [User] = []
     var listenerHandles: [ListenerRegistration] = []
     
@@ -39,7 +39,7 @@ class UserStateViewModel: ObservableObject {
         userDetails = User()
         username = ""
         userId = ""
-        selectedGroup = Group(name: "", inviteCode: "")
+        selectedGroup = Group(name: "", members: [], inviteCode: "")
         selectedGroupUsers = []
         unsubscribeListeners()
         userGroups = []
@@ -76,9 +76,7 @@ class UserStateViewModel: ObservableObject {
         if Auth.auth().currentUser?.uid != nil {
             getUserDetails()
             isLoggedIn = true
-            print("The user is logged in")
         } else {
-            print("The user is not logged in")
             isLoggedIn = false
         }
     }
@@ -90,7 +88,6 @@ class UserStateViewModel: ObservableObject {
     func showSignUpView() {
         showLogin = false
     }
-    
     
     func signIn(email: String, password: String) async -> Bool  {
         isBusy = true
@@ -117,14 +114,14 @@ class UserStateViewModel: ObservableObject {
             .setData([
                 "username": username,
                 "email": email,
-                "latitude": 0,
-                "longitude": 0,
+                "latitude": "0.0",
+                "longitude": "0.0",
                 "time": Date(),
                 "isDriving": false,
                 "speed": 0,
-//                "topSpeeds": [],
-                "totalDistanceDriven": 0
-                
+                "topSpeeds": [],
+                "totalDistanceDriven": 0,
+                "driveCount": 0
             ]) { err in
                 if let err = err {
                     print("There was an error writing the document: \(err)")
@@ -168,22 +165,14 @@ class UserStateViewModel: ObservableObject {
         }
     }
     
-
-    
     func getUserGroups() async {
         let groupRef = db.collection("Groups")
         
-        print("Your groups will be fetched now")
-        
         do {
             let querySnapshot = try await groupRef.whereField("members", arrayContains: getUserId()).getDocuments()
-            print("***************************** The groups are being fetched *****************************")
-            print("***************** \(getUserId())**********************")
             for document in querySnapshot.documents {
                 if let group = try? document.data(as: Group.self) {
                     self.userGroups.append(group)
-                    print("Document ID: \(document.documentID) => Data: \(document.data())")
-                    print("Hey you sexy man this is all your groups")
                     
                     let groupName = group.name
                     
@@ -196,16 +185,12 @@ class UserStateViewModel: ObservableObject {
         }
     }
     
-    
-
-    
     func fetchUsersInGroup(group: Group) {
         // Remove all Listeners
         listenerHandles.forEach{$0.remove()}
         listenerHandles.removeAll()
         
         selectedGroupUsers = []
-        userGroups = []
         
         let userRef = db.collection("users")
         
@@ -230,6 +215,50 @@ class UserStateViewModel: ObservableObject {
             }
             
             listenerHandles.append(listener)
+        }
+    }
+    
+    func joinGroupWithInviteCode(inviteCode: String) async -> String {
+        // First, check if the invite code exists in Firestore
+        reset()
+        let groupRef = db.collection("Groups")
+        let userId = getUserId()
+        
+        do {
+            let querySnapshot = try await groupRef.whereField("inviteCode", isEqualTo: inviteCode.uppercased()).getDocuments()
+            
+            if let document = querySnapshot.documents.first,
+               let group = try? document.data(as: Group.self) {
+                
+                // Check if the user is already a member of this group
+                if let currentMembers = group.members, !currentMembers.contains(userId) {
+                    // Add the user to the group's members array
+                    var updatedMembers = currentMembers
+                    updatedMembers.append(userId)
+                    
+                    // Update the Firestore document with the new members array
+                    try await groupRef.document(document.documentID).setData(["members": updatedMembers], merge: true)
+                    
+                    // Successfully added the user to the group, now refresh the user's group list
+                    await self.getUserGroups()
+                    
+                    // Fetch the updated group document after the update
+                    let updatedDocumentSnapshot = try await groupRef.document(document.documentID).getDocument()
+                    if let updatedGroup = try? updatedDocumentSnapshot.data(as: Group.self) {
+                        selectedGroup = updatedGroup
+                        
+                        fetchUsersInGroup(group: updatedGroup)
+                    }
+                    
+                    return "Successfully joined the group."
+                } else {
+                    return "User is already a member of this group or not authenticated."
+                }
+            } else {
+                return "Invalid invite code."
+            }
+        } catch {
+            return "Error joining the group: \(error)"
         }
     }
 }
