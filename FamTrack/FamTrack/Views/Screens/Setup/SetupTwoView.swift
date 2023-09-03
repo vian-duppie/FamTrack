@@ -98,7 +98,7 @@ struct SetupTwoView: View {
                     Spacer()
                         .frame(height: 15)
                     
-                    Button(action: {c
+                    Button(action: {
                         withAnimation {
                             isSetupDone = true
                         }
