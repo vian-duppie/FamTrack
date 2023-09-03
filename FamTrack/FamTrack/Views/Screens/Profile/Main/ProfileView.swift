@@ -9,15 +9,40 @@ import SwiftUI
 import MapKit
 
 struct ProfileView: View {
-    @State private var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: -25.892013, longitude: -25.892013), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+    @EnvironmentObject var userVM: UserStateViewModel
+    @EnvironmentObject var locationManager: LocationManager
+    
+    @State private var region: MKCoordinateRegion
+    @State private var sublocality: String?
+    
+    var userData: User // Property to hold user data
+    
+    init(userData: User) {
+        _region = State(initialValue: MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: Double(userData.latitude ?? "0") ?? 0, longitude: Double(userData.longitude ?? "0") ?? 0), span: MKCoordinateSpan(latitudeDelta: 0.007, longitudeDelta: 0.007)))
+        self.userData = userData
+    }
+    
+    var lastLocationSinceFormatted: String {
+        if let date = userData.time {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "HH:mm MM/dd/yyyy"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            return dateFormatter.string(from: date)
+        } else {
+            return "Unknown"
+        }
+    }
     
     var body: some View {
         VStack {
             ZStack {
-                Map(coordinateRegion: $region, showsUserLocation: true, userTrackingMode: .constant(.follow))
-                    .frame(width: 200, height: 200)
-                    .clipShape(Circle())
-                    .opacity(0.5)
+                Map(coordinateRegion: $region, annotationItems: [userData]) { user in
+                    MapAnnotation(coordinate: CLLocationCoordinate2D(latitude: Double(user.latitude ?? "0") ?? 0, longitude: Double(user.longitude ?? "0") ?? 0)) {
+                        PlaceAnnotationView(username: user.username, isDriving: user.isDriving, speed: user.speed)
+                    }
+                }
+                .frame(width: 200, height: 200)
+                .clipShape(Circle())
                 
                 Ellipse()
                     .frame(maxWidth: 250, maxHeight: 250)
@@ -27,12 +52,13 @@ struct ProfileView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: 200)
             
+            Spacer()
+            
             VStack(alignment: .leading, spacing: 10) {
-                Text("Anton Erasmus")
+                Text(userData.username)
                     .foregroundColor(Color("SecondaryDarkBlue"))
                     .font(Font.custom("Poppins-Medium", size: 32))
                     .frame(maxWidth: .infinity, alignment: .leading)
-                
                 
                 VStack(alignment: .leading){
                     HStack(spacing: 15) {
@@ -42,7 +68,7 @@ struct ProfileView: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(maxHeight: 22)
                         
-                        Text("Limpopo")
+                        Text(sublocality ?? "Unknown Location")
                             .foregroundColor(.white)
                             .font(Font.custom("Poppins-Light", size: 15))
                     }
@@ -54,7 +80,7 @@ struct ProfileView: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(maxHeight: 22)
                         
-                        Text("Since 06:13")
+                        Text("Since \(lastLocationSinceFormatted)")
                             .foregroundColor(.white)
                             .font(Font.custom("Poppins-Light", size: 15))
                     }
@@ -66,18 +92,8 @@ struct ProfileView: View {
             Spacer()
                 .frame(height: 30)
             
-            HStack {
-                Text("Additional features will soon be added here")
-            }
-            .padding(10)
-            .frame(maxWidth: .infinity)
-            .border(.red)
-            
-            Spacer()
-                .frame(height: 30)
-            
             VStack {
-                Text("You can view Anton's drive report as well as his health report.")
+                Text("You can view \(userData.username)'s drive report as well as their health report.")
                     .foregroundColor(.white)
                     .font(Font.custom("Poppins-Regular", size: 17))
             }
@@ -88,57 +104,45 @@ struct ProfileView: View {
             
             HStack {
                 NavigationLink {
-                    //                    ApplicationSwitcher()
-                    
+                    DriveReportView(userData: userData)
                 } label: {
                     Text("Drive Report")
                         .padding(.horizontal, 30)
                         .padding(.vertical, 10)
                         .foregroundColor(.white)
                         .font(Font.custom("Poppins-Medium", size: 15))
-//                        .frame(maxWidth: true ? .infinity : 150)
-//                        .frame(maxHeight: .infinity)
                         .background(Color("SecondaryDarkBlue"))
                         .cornerRadius(10)
-//                        .lineLimit(1)
-                }.simultaneousGesture(TapGesture().onEnded{
-                    //                    isOnboardingDone = true
-                    //                    userVM.showLoginView()
-                    print("Show drive report")
-                })
+                }
                 
                 Spacer()
-//                    .frame(width: 15)
                 
                 NavigationLink {
-                    //                    ApplicationSwitcher()
-                    
+                    HealthReportView(userData: userData)
                 } label: {
                     Text("Health Report")
                         .padding(.horizontal, 30)
                         .padding(.vertical, 10)
                         .foregroundColor(.white)
                         .font(Font.custom("Poppins-Medium", size: 15))
-//                        .frame(maxWidth: true ? .infinity : 150)
                         .background(Color("SecondaryDarkBlue"))
                         .cornerRadius(10)
-//                        .lineLimit(1)
-                }.simultaneousGesture(TapGesture().onEnded{
-                    //                    isOnboardingDone = true
-                    //                    userVM.showSignUpView()
-                    print("Show health report")
-                })
+                }
                 
             }
             .padding(.horizontal, 30)
-            //                .frame(maxWidth: .infinity)
+            
+            Spacer()
         }
         .frame(maxHeight: .infinity)
-    }
-}
-
-struct ProfileView_Previews: PreviewProvider {
-    static var previews: some View {
-        ProfileView()
+        .onAppear {
+            let customCoordinates = CLLocationCoordinate2D(latitude: Double(userData.latitude ?? "0") ?? 0, longitude: Double(userData.longitude ?? "0") ?? 0)
+            
+            locationManager.lookUpLocation(for: customCoordinates) { placemark in
+                if let placemark = placemark {
+                    sublocality = placemark.subLocality
+                }
+            }
+        }
     }
 }
