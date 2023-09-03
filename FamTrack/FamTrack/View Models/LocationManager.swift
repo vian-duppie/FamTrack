@@ -46,9 +46,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         manager.startUpdatingLocation()
         
         // Schedule a timer to call updateUserLocation every minute
-         updateLocationTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
-             self?.updateUserLocation()
-         }
+        updateLocationTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            self?.updateUserLocation()
+        }
         
         // Initialize the user property with user data
         if let userId = Auth.auth().currentUser?.uid {
@@ -73,15 +73,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func setUserLocation() {
-        print("Updating user location when launching app")
-    }
-    
     // Clean up top speeds older than 7 days and keep only the highest speed entry for each day
     func filterAndUpdateTopSpeeds(_ user: inout User, in userRef: DocumentReference) {
         // Create a dictionary to store the highest speed entry for each day
         var highestSpeedsByDate: [Date: Int] = [:]
-
+        
         // Iterate through topSpeeds to find the highest speed entry for each day
         for entry in user.topSpeeds {
             let calendar = Calendar.current
@@ -98,7 +94,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 }
             }
         }
-
+        
         // Filter topSpeeds to keep only the entries with the highest speeds for each day
         user.topSpeeds = user.topSpeeds.filter { entry in
             let calendar = Calendar.current
@@ -111,54 +107,100 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return false
         }
     }
-
-
+    
+    func testing() {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            return
+        }
+        
+        let db = Firestore.firestore()
+        let userRef = db.collection("users").document(userId)
+        
+        let locationData: [String: Any] = [
+            "latitude": String(previousLocation?.coordinate.latitude ?? 0),
+            "longitude": String(previousLocation?.coordinate.longitude ?? 0),
+            "isDriving": false,
+            "speed": 0,
+            "time": Date(),
+        ]
+        
+        userRef.updateData(locationData) { [weak self] error in
+            guard let self = self else { return }
+            if let error = error {
+                print("Error updating user location: \(error)")
+            } else {
+                print("User location updated successfully")
+            }
+        }
+    }
+    
+    var lastTopSpeedForToday: Int = 0
+    
     func updateUserLocation() {
         guard var user = user else {
             return
         }
         // Firebase only updates if it has not updated for 5 seconds to stop excessive updated
-//        print("Firebase checking if it should update")
         let now = Date().timeIntervalSince1970
         // The user document will be updated because 5 seconds has passed since it has been updated and other conditions has been met to update the doc
         if now - lastUpdateTimeStamp >= 5 {
             lastUpdateTimeStamp = now
-
+            
             guard let userId = Auth.auth().currentUser?.uid else {
-//                print("User is not logged in")
                 return
             }
-
+            
             let db = Firestore.firestore()
             let userRef = db.collection("users").document(userId)
-
-            // Check if the current speed is greater than the stored top speed
-            if userSpeed > user.topSpeeds.last?.speed ?? 0 {
-                // Create a new top speed entry
-                let newTopSpeedEntry = TopSpeedEntry(speed: userSpeed, date: Date())
-                // Append it to the user's top speeds
-                user.topSpeeds.append(newTopSpeedEntry)
+            
+            // Calculate the current day's start date
+            let today = Calendar.current.startOfDay(for: Date())
+            
+            // Check if there's a top speed entry for today
+            if let topSpeedEntryForToday = user.topSpeeds.first(where: { Calendar.current.isDate($0.date, inSameDayAs: today) }) {
+                // Use the top speed for today
+                lastTopSpeedForToday = topSpeedEntryForToday.speed
+            } else {
+                // No top speed recorded for today, so use 0
+                lastTopSpeedForToday = 0
             }
             
-
+            if userSpeed > lastTopSpeedForToday {
+                // Update the lastTopSpeedForToday
+                lastTopSpeedForToday = userSpeed
+                
+                // Create a new top speed entry for today or update the existing one
+                let today = Calendar.current.startOfDay(for: Date())
+                
+                if let existingEntryIndex = user.topSpeeds.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: today) }) {
+                    // Update the existing entry for today
+                    user.topSpeeds[existingEntryIndex].speed = lastTopSpeedForToday
+                    user.topSpeeds[existingEntryIndex].date = today
+                } else {
+                    // Create a new top speed entry for today
+                    let newTopSpeedEntry = TopSpeedEntry(speed: lastTopSpeedForToday, date: today)
+                    user.topSpeeds.append(newTopSpeedEntry)
+                }
+                
+                // Set shouldUpdatedUserLocation to true
+                shouldUpdatedUserLocation = true
+            }
+            
             // Clean up top speeds older than 7 days
             let cutoffDate = Date().addingTimeInterval(-7 * 24 * 60 * 60) // 7 days in seconds
             user.topSpeeds = user.topSpeeds.filter { $0.date > cutoffDate }
-
+            
             // Filter and update top speeds
             filterAndUpdateTopSpeeds(&user, in: userRef)
-
-            let topSpeedsData = user.topSpeeds.map { ["speed": $0.speed, "date": $0.date] as [String : Any] }
             
-//            cleanUpTopSpeeds()
+            let topSpeedsData = user.topSpeeds.map { ["speed": $0.speed, "date": $0.date] as [String : Any] }
             
             if isDriving {
                 user.totalDistanceDriven += Double(distanceToAdd)
             }
             
             user.driveCount += driveCount
-
-            print("Distance traveled \(lastUpdateDistance)")
+            
             // Update the user document with the new total distance and other location data
             let locationData: [String: Any] = [
                 "latitude": String(previousLocation?.coordinate.latitude ?? 0),
@@ -170,7 +212,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 "time": Date(),
                 "driveCount": user.driveCount
             ]
-
+            
             userRef.updateData(locationData) { [weak self] error in
                 guard let self = self else { return }
                 if let error = error {
@@ -180,9 +222,6 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                     self.loadUserData(userId: userId)
                 }
             }
-            
-//            // Update the last update distance
-//            lastUpdateDistance = Int(totalDistanceTraveled)
         }
     }
     
@@ -202,48 +241,39 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 // Calculate distance between previous and current location
                 let distance = previousLocation.distance(from: location)
                 totalDistanceTraveled += distance
-//                print("Distance traveled while driving: \(Int(totalDistanceTraveled)) meters")
             }
             
             let distanceNow = Int(totalDistanceTraveled)
             if distanceNow - lastUpdateDistance > 50 {
-//                print("The user traveled more than 50 meters while driving")
                 distanceToAdd = distanceNow - lastUpdateDistance
                 lastUpdateDistance = distanceNow
                 
-                
-//                print("***Firebase will be updated*** Because of distance traveled while driving")
                 shouldUpdatedUserLocation = true
             }
         } else {
-//            print("The user is walking")
             if let previousLocation = previousLocation {
                 let distance = previousLocation.distance(from: location)
                 totalDistanceWalked += distance
-//                print("Distance while walking: \(Int(totalDistanceWalked)) meters")
             }
             
             let distanceNow = Int(totalDistanceWalked)
             if distanceNow - lastDistanceWalked > 50 {
-//                print("The user traveled more than 50 meters while walking")
                 lastDistanceWalked = distanceNow
                 
-//                print("***Firebase will be updated*** because of the distance while walking")
                 shouldUpdatedUserLocation = true
             }
         }
-
+        
         // This indicates that the user is now driving (the speed is in meter per seconds)
         // 7m/s is roughly 25km/h
         if location.speed > 7 {
             let speedKmPerHour = Int(location.speed * 3.6)
-//            print("User is going \(speedKmPerHour) km/h")
             userSpeed = speedKmPerHour
             
             if speedKmPerHour > topSpeed {
                 print("A new topSpeed is achieved")
                 topSpeed = speedKmPerHour
-
+                
                 // Check if there is already a top speed entry for today
                 let today = Calendar.current.startOfDay(for: Date())
                 
@@ -251,30 +281,24 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                     // Update the existing entry if today's entry already exists
                     topSpeeds[existingEntryIndex].speed = topSpeed
                     topSpeeds[existingEntryIndex].date = today
-
+                    
                     // This is where you update the existing top speed entry for the day
                     shouldUpdatedUserLocation = true
                 } else {
                     // Create a new top speed entry for today
                     let newTopSpeedEntry = TopSpeedEntry(speed: topSpeed, date: today)
                     topSpeeds.append(newTopSpeedEntry)
-
+                    
                     // This is where a new top speed entry is added to the topSpeeds array
                     shouldUpdatedUserLocation = true
                 }
             }
-
-
-
-
             
             if !isDriving {
                 // The user started driving
                 isDriving = true
-//                print("User started driving")
                 
                 // Update the user document in firebase
-//                print("***Firebase will be updated*** because the user started driving")
                 shouldUpdatedUserLocation = true
             }
         } else {
@@ -282,23 +306,19 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             if isDriving {
                 // The user stopped driving
                 isDriving = false
-//                print("User stopped driving")
                 
                 userSpeed = 0
                 
                 // The user did another drive
                 driveCount += 1
-//                print("Drive count: \(driveCount)")
                 
                 // Update the user document in firebase
-//                print("***Firebase will be updated*** because the user stopped driving")
                 shouldUpdatedUserLocation = true
             }
         }
         
         if shouldUpdatedUserLocation {
-//            print("((::****Firebase updating****::))")
-//            updateUserLocation()
+            updateUserLocation()
             shouldUpdatedUserLocation = false
         }
         
@@ -335,20 +355,19 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func lookUpCurrentLocation(completionHandler: @escaping (CLPlacemark?)
-                    -> Void ) {
+                               -> Void ) {
         // Use the last reported location.
         if let lastLocation = self.manager.location {
             let geocoder = CLGeocoder()
-                
+            
             // Look up the location and pass it to the completion handler
-            geocoder.reverseGeocodeLocation(lastLocation,
-                        completionHandler: { (placemarks, error) in
+            geocoder.reverseGeocodeLocation(lastLocation, completionHandler: { (placemarks, error) in
                 if error == nil {
                     let firstLocation = placemarks?[0]
                     completionHandler(firstLocation)
                 }
                 else {
-                 // An error occurred during geocoding.
+                    // An error occurred during geocoding.
                     completionHandler(nil)
                 }
             })
@@ -362,7 +381,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func lookUpLocation(for coordinate: CLLocationCoordinate2D, completionHandler: @escaping (CLPlacemark?) -> Void) {
         let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
         let geocoder = CLGeocoder()
-
+        
         // Look up the location and pass it to the completion handler
         geocoder.reverseGeocodeLocation(location) { (placemarks, error) in
             if error == nil {
@@ -374,6 +393,4 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         }
     }
-
 }
-
