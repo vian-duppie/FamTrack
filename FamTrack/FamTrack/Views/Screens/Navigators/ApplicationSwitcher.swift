@@ -15,11 +15,15 @@ struct ApplicationSwitcher: View {
         if userVM.isLoggedIn {
             if isSetupDone {
                 HomeView()
+                    .navigationBarBackButtonHidden(true)
             } else {
                 SetupView()
             }
         } else {
             AuthSwitcher()
+                .onAppear {
+                    userVM.checkAuth()
+                }
         }
     }
 }
