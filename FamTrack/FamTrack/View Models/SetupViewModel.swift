@@ -32,7 +32,6 @@ class SetupViewModel: ObservableObject {
             let hashedData = SHA256.hash(data: inputData)
             let codeData = hashedData.prefix(6)
             
-            print(codeData)
             let code = codeData.map{String(format: "%02hhx", $0)}.joined()
             return String(code.prefix(6)).uppercased()
         }
