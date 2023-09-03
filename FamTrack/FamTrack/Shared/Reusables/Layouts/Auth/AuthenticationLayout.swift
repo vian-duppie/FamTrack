@@ -67,8 +67,6 @@ struct AuthenticationLayout<Content: View>: View {
                     CustomButton(label: buttonLabel, clicked: mainAction)
                         .frame(maxWidth: .infinity, alignment: .trailing)
                     
-
-                    
                     HStack {
                         Text(lineButtonLabel)
                             .foregroundColor(.white)
@@ -76,7 +74,6 @@ struct AuthenticationLayout<Content: View>: View {
                             .opacity(lineButtonOpacity > 0 ? lineButtonOpacity : 1)
                         
                         CustomLineButton(label: lineButtonText, clicked: secondaryAction, opacity: lineButtonOpacity)
-    //                        .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
                 }
